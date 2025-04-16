@@ -134,7 +134,10 @@ using_camera() {
   fi
 
   if is_mac; then
+    # built in camera
     log show --last 1s | grep -q cameracaptured && return
+    # usb camera
+    log show --last 1s | grep -q createFromPixelbuffer && return
   fi
 
   false
