@@ -150,9 +150,10 @@ is_oncall() {
     | jq -r .oncalls[1].user.id \
   )
   if [[ "$oncall_id" == "$PD_USER_ID" ]]; then
-    echo "you're on call. hooray"
+    echo "you're on call 🫠"
     return
   else
+    echo "not on call 😎"
     false
   fi
 }

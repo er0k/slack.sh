@@ -47,9 +47,9 @@ other commands:
 
     + `SLACK_USER_ID` from `https://<your-org>.slack.com/account/profile`
     + `SLACK_TOKEN` from step 4 above
-    + `PD_USER_ID` from `https://<your-org>.pagerduty.com/users-new`
-    + `PD_TOKEN` from ... I forget
-    + `PD_SHEDULE_ID` from ... I forget
+    + `PD_USER_ID` from `https://<your-org>.pagerduty.com/users`
+    + `PD_TOKEN` from My Profile > User Settings > Create API User Token
+    + `PD_SHEDULE_ID` from `https://<your-org>.pagerduty.com/schedules`
 
 6. Set the env vars:
 
