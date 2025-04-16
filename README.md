@@ -24,7 +24,7 @@ other commands:
 - `st`: get the current status, skipping cache
 - `stc`: get the cached status (cache lives for 5 minutes)
 - `moon`: a trip to the moon :new_moon_with_face:
-- `zoom`: run this in a cronjob to check if you are using zoom and set `meet` accordingly
+- `auto`: run this in a cronjob to check if you are using the camera and set `meet` accordingly
 
 ## Install
 
@@ -72,7 +72,7 @@ $ ./slack.sh
 To run in a cronjob, you can use a tmux session with your env vars in it:
 
 ```
-* 10-18 * * 1-5 tmux send -t cron "/path/to/slack.sh zoom" ENTER > /dev/null 2>&1
+* 10-18 * * 1-5 tmux send -t cron "/path/to/slack.sh auto" ENTER > /dev/null 2>&1
 ```
 
 To put your slack status in your tmux bar, do something like:

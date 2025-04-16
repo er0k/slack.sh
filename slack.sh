@@ -127,6 +127,19 @@ using_zoom() {
   false
 }
 
+using_camera() {
+  if is_linux; then
+    # figure out how to check this
+    return 1
+  fi
+
+  if is_mac; then
+    log show --last 1s | grep -q cameracaptured && return
+  fi
+
+  false
+}
+
 is_oncall() {
   [ "$PD_USER_ID" = "nope" ] && return 1
   [ "$PD_TOKEN" = "nope" ] && return 1
@@ -172,10 +185,10 @@ get_cached_status() {
 }
 
 case "$1" in
-  zoom)
+  auto)
     status="$(get_status)"
-    if using_zoom; then
-      echo "zoomin"
+    if using_camera; then
+      echo "on cam, probably in a meeting"
       if [[ "${status}" == "In a meeting" ]]; then
         echo "already in a meeting"
       else
@@ -262,7 +275,7 @@ case "$1" in
     set_status
     ;;
   *)
-    echo "Usage: $0 [here|away|zzz|lunch|brb|dog|meet|call|pom|st|stc|zoom|moon]"
+    echo "Usage: $0 [here|away|zzz|lunch|brb|dog|meet|call|pom|st|stc|auto|moon]"
     exit 1
     ;;
 esac
