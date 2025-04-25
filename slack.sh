@@ -31,6 +31,10 @@ rand_doom() {
 
 # https://api.slack.com/methods/users.profile.set
 set_status() {
+  if is_in_huddle; then
+    echo "in a huddle, refusing to change status"
+    return
+  fi
   status="${1:-}"
   emoji="${2:-}"
   echo -n "setting status ${status} ${emoji}.."
@@ -68,12 +72,23 @@ get_presence() {
 }
 
 get_status() {
-  curl -s \
+  status=$(curl -s \
     -H "Content-type: application/json; charset=utf-8" \
     -H "Authorization: Bearer ${SLACK_TOKEN}" \
     -H "X-Slack-User: ${SLACK_USER_ID}" \
-    https://slack.com/api/users.profile.get \
-    | jq -r .profile.status_text # .profile.status_emoji
+    https://slack.com/api/users.profile.get)
+  huddle_state=$(echo "$status" | jq -r .profile.huddle_state)
+  status_text=$(echo "$status" | jq -r .profile.status_text)
+  if [[ "${huddle_state}" == "in_a_huddle" ]]; then
+    echo -n "🎧 "
+  fi
+  [[ -n "$status_text" ]] && echo "$status_text"
+}
+
+# slack huddles are weird yo
+is_in_huddle() {
+  [[ $(get_status) == *"🎧"* ]] && return
+  false
 }
 
 # snooze aka do-not-disturb
@@ -188,21 +203,30 @@ get_cached_status() {
   fi
 }
 
+figure_it_out() {
+  status="$(get_status)"
+  if is_in_huddle; then
+    # let slack handle this one
+    echo "in a huddle"
+    return
+  fi
+  if using_camera; then
+    echo "on cam, probably in a meeting"
+    if [[ "${status}" == "In a meeting" ]]; then
+      echo "already in a meeting"
+    else
+      $0 meet
+    fi
+  else
+    if [[ "${status}" == "In a meeting" ]]; then
+      $0 here
+    fi
+  fi
+}
+
 case "$1" in
   auto)
-    status="$(get_status)"
-    if using_camera; then
-      echo "on cam, probably in a meeting"
-      if [[ "${status}" == "In a meeting" ]]; then
-        echo "already in a meeting"
-      else
-        $0 meet
-      fi
-    else
-      if [[ "${status}" == "In a meeting" ]]; then
-        $0 here
-      fi
-    fi
+    figure_it_out
     ;;
   here)
     wake_up
