@@ -173,7 +173,7 @@ idle_time() {
 
 get_live_status() {
   snooze=$(is_snoozing && echo "🔕" || echo "")
-  presence=$([ $(get_presence) == "away" ] && echo "🔴" || echo "🟢")
+  presence=$([ "$(get_presence)" == "away" ] && echo "🔴" || echo "🟢")
   echo "${presence} ${snooze} $(get_status)" > "${STATUS_FILE}"
 }
 
