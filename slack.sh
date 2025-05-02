@@ -142,6 +142,15 @@ using_zoom() {
   false
 }
 
+# in order to use this function you must install brotab
+# https://github.com/balta2ar/brotab
+# it's bugged on macos with firefox, so make sure you move the manifest file after installing
+# https://github.com/balta2ar/brotab/issues/43
+using_meet() {
+  bt list | grep -q 'https://meet.google.com' && return
+  false
+}
+
 using_camera() {
   if is_linux; then
     # figure out how to check this
@@ -210,8 +219,8 @@ figure_it_out() {
     echo "in a huddle"
     return
   fi
-  if using_camera; then
-    echo "on cam, probably in a meeting"
+  if using_meet; then
+    echo "using meet.google.com"
     if [[ "${status}" == "In a meeting" ]]; then
       echo "already in a meeting"
     else
