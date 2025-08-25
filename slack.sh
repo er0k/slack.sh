@@ -5,10 +5,17 @@
 [ -n "$SLACK_USER_ID" ] || { echo "need a SLACK_USER_ID to continue"; exit 2; }
 [ -n "$SLACK_TOKEN" ] || { echo "need a SLACK_TOKEN to continue"; exit 3; }
 
+on_call_service="pagerduty"
+
 # set these if you want to check pagerduty
 : "${PD_USER_ID:=nope}"
 : "${PD_TOKEN:=nope}"
 : "${PD_SHEDULE_ID:=nope}"
+
+# set these if you want to check pagerduty
+: "${ROOTLY_USER_ID:=nope}"
+: "${ROOTLY_API_TOKEN:=nope}"
+: "${ROOTLY_SCHEDULE_ID:=nope}"
 
 # cached slack status so we don't crush the API
 STATUS_FILE=/tmp/slack_status
@@ -168,15 +175,49 @@ using_camera() {
 }
 
 is_oncall() {
+  case "$on_call_service" in
+    "pagerduty")
+      is_oncall_pd
+      ;;
+    "rootly")
+      is_oncall_rootly
+      ;;
+    *)
+      echo "unknown on-call service. We only support pagerduty or rootly"
+      ;;
+  esac
+}
+
+is_oncall_pd() {
+  echo -n "checking pagerduty.."
   [ "$PD_USER_ID" = "nope" ] && return 1
   [ "$PD_TOKEN" = "nope" ] && return 1
   [ "$PD_SHEDULE_ID" = "nope" ] && return 1
-  oncall_id=$(curl -s \
+  pd_oncall_id=$(curl -s \
     -H "Authorization: Token token=$PD_TOKEN" \
     "https://api.pagerduty.com/oncalls?schedule_ids[]=$PD_SHEDULE_ID" \
     | jq -r .oncalls[1].user.id \
   )
-  if [[ "$oncall_id" == "$PD_USER_ID" ]]; then
+  if [[ "$pd_oncall_id" == "$PD_USER_ID" ]]; then
+    echo "you're on call 🫠"
+    return
+  else
+    echo "not on call 😎"
+    false
+  fi
+}
+
+is_oncall_rootly() {
+  echo -n "checking rootly.."
+  [ "$ROOTLY_USER_ID" = "nope" ] && return 1
+  [ "$ROOTLY_API_TOKEN" = "nope" ] && return 1
+  [ "$ROOTLY_SCHEDULE_ID" = "nope" ] && return 1
+  rootly_oncall_id=$(curl -s \
+    -H "Authorization: Bearer $ROOTLY_API_TOKEN" \
+    "https://api.rootly.com/v1/schedules/$ROOTLY_SCHEDULE_ID/shifts" \
+    | jq -r .data[0].relationships.user.data.id \
+  )
+  if [[ "$rootly_oncall_id" == "$ROOTLY_USER_ID" ]]; then
     echo "you're on call 🫠"
     return
   else
